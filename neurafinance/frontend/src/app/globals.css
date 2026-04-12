@@ -1,0 +1,395 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* AIP.Finance Inspired Dark Theme */
+    --background: 0 0% 0.4%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 2%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 2%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 142 71% 45%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 160 60% 45%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 142 80% 65%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 142 30% 15%;
+    --input: 142 30% 15%;
+    --ring: 142 71% 45%;
+    --radius: 0.75rem;
+    
+    /* Custom AIP Colors */
+    --aip-dark: #010101;
+    --aip-green: #22C55E;
+    --aip-green-light: #7AE490;
+    --aip-green-dark: #16A34A;
+    --aip-teal: #3CC896;
+    --glass-border: rgba(120, 220, 160, 0.08);
+    --glass-bg: rgba(255, 255, 255, 0.02);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-[#010101] text-white antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  /* AIP.Finance Glassmorphism */
+  .glass-aip {
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(10,30,20,0.02));
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(120, 220, 160, 0.08);
+    box-shadow: 0 8px 30px rgba(20, 60, 45, 0.25);
+  }
+  
+  .glass-aip-hover {
+    @apply glass-aip;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .glass-aip-hover:hover {
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(10,30,20,0.04));
+    border-color: rgba(120, 220, 160, 0.15);
+    box-shadow: 0 12px 40px rgba(20, 60, 45, 0.35);
+    transform: translateY(-2px);
+  }
+  
+  /* Ambient Glow Background */
+  .ambient-glow {
+    background: 
+      radial-gradient(600px 320px at 50% 36%, rgba(122,228,144,0.16), rgba(0,0,0,0)),
+      radial-gradient(1000px 420px at 50% 72%, rgba(60,200,150,0.06), rgba(0,0,0,0));
+  }
+  
+  /* Green Gradient Text */
+  .text-gradient-green {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #22C55E 0%, #7AE490 50%, #3CC896 100%);
+  }
+  
+  /* AIP Buttons - Modern Enhanced */
+  .btn-aip {
+    @apply relative overflow-hidden font-medium py-3 px-6 rounded-xl transition-all duration-300;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    border: 1px solid rgba(120, 220, 160, 0.2);
+    box-shadow: 
+      inset 0 1px 0 rgba(255,255,255,0.05), 
+      0 4px 15px rgba(10,20,10,0.4),
+      0 0 0 1px rgba(34, 197, 94, 0.1);
+  }
+  
+  .btn-aip:hover {
+    background: linear-gradient(180deg, rgba(34,197,94,0.15), rgba(34,197,94,0.08));
+    border-color: rgba(34, 197, 94, 0.4);
+    box-shadow: 
+      inset 0 1px 0 rgba(255,255,255,0.08), 
+      0 8px 30px rgba(34,197,94,0.25),
+      0 0 20px rgba(34, 197, 94, 0.15);
+    transform: translateY(-2px);
+  }
+  
+  .btn-aip:active {
+    transform: translateY(0);
+    box-shadow: 
+      inset 0 1px 0 rgba(255,255,255,0.05), 
+      0 4px 15px rgba(34,197,94,0.2);
+  }
+  
+  /* Primary Button - Glowing Effect */
+  .btn-aip-primary {
+    @apply relative overflow-hidden font-semibold py-3 px-8 rounded-xl transition-all duration-300;
+    background: linear-gradient(135deg, #22C55E 0%, #16A34A 50%, #22C55E 100%);
+    background-size: 200% 200%;
+    border: none;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: 
+      0 4px 20px rgba(34, 197, 94, 0.4),
+      0 0 0 1px rgba(34, 197, 94, 0.3),
+      inset 0 1px 0 rgba(255,255,255,0.2);
+    animation: gradient-shift 3s ease infinite;
+  }
+  
+  .btn-aip-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s ease;
+  }
+  
+  .btn-aip-primary:hover {
+    background-position: 100% 0;
+    box-shadow: 
+      0 8px 35px rgba(34, 197, 94, 0.5),
+      0 0 0 1px rgba(34, 197, 94, 0.4),
+      0 0 30px rgba(34, 197, 94, 0.3),
+      inset 0 1px 0 rgba(255,255,255,0.25);
+    transform: translateY(-3px) scale(1.02);
+  }
+  
+  .btn-aip-primary:hover::before {
+    left: 100%;
+  }
+  
+  .btn-aip-primary:active {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 
+      0 4px 20px rgba(34, 197, 94, 0.3),
+      0 0 0 1px rgba(34, 197, 94, 0.3);
+  }
+  
+  /* Secondary Button - Outline Glow */
+  .btn-aip-secondary {
+    @apply relative overflow-hidden font-medium py-3 px-8 rounded-xl transition-all duration-300;
+    background: transparent;
+    border: 2px solid rgba(34, 197, 94, 0.5);
+    color: #22C55E;
+    box-shadow: 
+      0 0 0 0 rgba(34, 197, 94, 0),
+      inset 0 0 20px rgba(34, 197, 94, 0.05);
+  }
+  
+  .btn-aip-secondary:hover {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.8);
+    color: #7AE490;
+    box-shadow: 
+      0 0 30px rgba(34, 197, 94, 0.2),
+      inset 0 0 30px rgba(34, 197, 94, 0.1);
+    transform: translateY(-2px);
+  }
+  
+  /* Large CTA Button */
+  .btn-aip-cta {
+    @apply relative overflow-hidden font-bold py-4 px-10 rounded-2xl transition-all duration-300 text-lg;
+    background: linear-gradient(135deg, #22C55E 0%, #16A34A 40%, #22C55E 100%);
+    background-size: 200% 200%;
+    border: none;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 
+      0 8px 30px rgba(34, 197, 94, 0.4),
+      0 0 0 1px rgba(34, 197, 94, 0.3),
+      0 0 40px rgba(34, 197, 94, 0.2),
+      inset 0 1px 0 rgba(255,255,255,0.2);
+    animation: gradient-shift 3s ease infinite;
+  }
+  
+  .btn-aip-cta::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(135deg, #22C55E, #7AE490, #22C55E);
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    filter: blur(10px);
+    transition: opacity 0.3s ease;
+  }
+  
+  .btn-aip-cta:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 
+      0 15px 40px rgba(34, 197, 94, 0.5),
+      0 0 0 1px rgba(34, 197, 94, 0.4),
+      0 0 60px rgba(34, 197, 94, 0.3);
+  }
+  
+  .btn-aip-cta:hover::after {
+    opacity: 0.6;
+  }
+  
+  /* Icon Button */
+  .btn-aip-icon {
+    @apply relative flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    border: 1px solid rgba(120, 220, 160, 0.2);
+    color: #22C55E;
+  }
+  
+  .btn-aip-icon:hover {
+    background: linear-gradient(180deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1));
+    border-color: rgba(34, 197, 94, 0.5);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+    transform: translateY(-2px) scale(1.05);
+  }
+  
+  /* Section Badge */
+  .badge-aip {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    color: #7AE490;
+  }
+  
+  /* Number Badge */
+  .number-badge {
+    @apply w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm;
+    background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.1));
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #22C55E;
+  }
+  
+  /* Feature Card */
+  .feature-card {
+    @apply glass-aip-hover p-8 rounded-2xl relative overflow-hidden;
+  }
+  
+  /* Step Card */
+  .step-card {
+    @apply glass-aip p-6 rounded-2xl text-center;
+  }
+  
+  /* Accordion */
+  .accordion-item {
+    @apply glass-aip rounded-xl overflow-hidden mb-4;
+  }
+  
+  .accordion-trigger {
+    @apply w-full px-6 py-4 flex items-center justify-between text-left transition-colors;
+  }
+  
+  .accordion-trigger:hover {
+    background: rgba(34, 197, 94, 0.05);
+  }
+  
+  /* Input Field */
+  .input-aip {
+    @apply w-full px-4 py-3 rounded-xl text-white placeholder-white/30 transition-all;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(120, 220, 160, 0.1);
+  }
+  
+  .input-aip:focus {
+    @apply outline-none;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(34, 197, 94, 0.4);
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+  }
+  
+  /* Glow Effects */
+  .glow-green {
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
+  }
+  
+  /* Animated Background */
+  .animated-bg {
+    background: linear-gradient(-45deg, #010101, #0a1a12, #010101, #0d1f15);
+    background-size: 400% 400%;
+    animation: gradient-shift 15s ease infinite;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(34, 197, 94, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 197, 94, 0.5);
+}
+
+/* Animations */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+  50% { opacity: 1; box-shadow: 0 0 40px rgba(34, 197, 94, 0.5); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes button-shine {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(200%) rotate(45deg); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3), 0 0 40px rgba(34, 197, 94, 0.1);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.5), 0 0 60px rgba(34, 197, 94, 0.2);
+  }
+}
+
+@keyframes border-glow {
+  0%, 100% { border-color: rgba(34, 197, 94, 0.3); }
+  50% { border-color: rgba(34, 197, 94, 0.6); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-border-glow {
+  animation: border-glow 2s ease-in-out infinite;
+}
+
+/* Grid Pattern */
+.grid-pattern {
+  background-image: 
+    linear-gradient(rgba(34, 197, 94, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 197, 94, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}

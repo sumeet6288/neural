@@ -1,0 +1,349 @@
+You are a senior-level blockchain architect, DeFi protocol designer, smart contract engineer, backend systems engineer, and frontend Web3 developer.
+
+You have experience building large-scale, production-grade decentralized finance ecosystems.
+
+Your task is to design and build a COMPLETE AI-driven DeFi platform inspired by systems like AIPF (AI Powered Finance), but with original branding, improved architecture, and better sustainability.
+
+You must think like a CTO building a real product — not just writing code.
+
+---
+
+# 🧠 CORE OBJECTIVE
+
+Build a FULL-STACK decentralized ecosystem including:
+
+1. Smart contracts (Solidity)
+2. Frontend web application (React / Next.js)
+3. Backend automation system (Node.js / Python)
+4. Blockchain integration (Polygon)
+5. Tokenomics + economic engine
+6. DAO governance system
+
+This is NOT a simple token. This is a complete financial protocol.
+
+---
+
+# 🏗️ SYSTEM ARCHITECTURE (MANDATORY)
+
+Design the system with modular architecture across 5 layers:
+
+---
+
+## 🔷 LAYER 1 — SMART CONTRACTS (CORE LOGIC)
+
+Create separate, modular smart contracts:
+
+### 1. Token Contract (ERC20)
+
+* Mintable + burnable
+* Controlled emission (not unlimited)
+* Transaction fees (buy/sell tax)
+* Fee distribution:
+
+  * Treasury
+  * Liquidity
+  * Rewards
+* Anti-whale limits (optional)
+
+---
+
+### 2. Treasury Contract
+
+* Holds stable assets (USDT / USDC)
+* Responsible for:
+
+  * Buybacks
+  * Liquidity support
+  * Reward funding
+* Only callable by authorized contracts or DAO
+* Fully transparent
+
+---
+
+### 3. Staking Contract
+
+Support:
+
+#### A. Bond Staking
+
+* Lock durations: 45 / 90 / 180 / 360 days
+* Higher ROI
+
+#### B. Flexible Staking
+
+* No lock
+* Lower ROI
+
+Must include:
+
+* Reward tracking
+* Auto-compounding logic
+* Time-based calculations
+
+---
+
+### 4. Referral & Ranking Contract
+
+* Multi-level referral tracking
+* Direct reward: 10%
+* Rank system (15 levels)
+* Rank criteria:
+
+  * Stake amount
+  * Team volume
+  * Referral count
+* ROI-on-ROI bonus logic
+
+---
+
+### 5. DAO Governance Contract
+
+* Proposal system
+* Voting system
+* Execution system
+* Voting power = stake + duration + rank
+* Controls:
+
+  * Emission rates
+  * Fees
+  * Treasury allocation
+  * Risk parameters
+
+---
+
+### 6. Borrowing & Lending Contract
+
+* Collateral-based loans
+* Loan-to-Value (LTV) logic
+* Interest calculation
+* Liquidation engine
+* Treasury integration
+
+---
+
+### 7. Stablecoin Contract
+
+* Minted against collateral
+* Backed by treasury reserves
+* Used internally for borrowing/lending
+
+---
+
+## 🔷 LAYER 2 — AI SIMULATION ENGINE (VERY IMPORTANT)
+
+Implement 5 core modules (rule-based, not real AI):
+
+### NEE (Emission Engine)
+
+* Controls minting and burning
+* Adjusts supply dynamically
+
+---
+
+### ALS (Liquidity Stabilizer)
+
+* Maintains price corridor
+* Executes:
+
+  * Buybacks when price drops
+  * Controlled selling when price spikes
+
+---
+
+### ARP (Auto Reinvest Protocol)
+
+* Collects all protocol fees
+* Sends funds to treasury
+* Reinvests into liquidity
+
+---
+
+### SIG (Supply Integrity Guard)
+
+* Validates mint requests
+* Prevents oversupply
+* Ensures treasury backing
+
+---
+
+### ALP (Adaptive Logic Predictor)
+
+* Monitors system health
+* Adjusts:
+
+  * emission rates
+  * reward rates
+* Ensures long-term sustainability
+
+---
+
+## 🔷 LAYER 3 — BACKEND AUTOMATION
+
+Build backend system using Node.js or Python:
+
+### Responsibilities:
+
+* Run scheduled jobs every 12 hours
+* Monitor:
+
+  * token price
+  * treasury balance
+  * staking activity
+* Call smart contracts to:
+
+  * adjust emission
+  * trigger rebalancing
+  * update parameters
+
+This simulates AI behavior.
+
+---
+
+## 🔷 LAYER 4 — FRONTEND WEB APP
+
+Build using React or Next.js.
+
+### Required Pages:
+
+1. Landing Page
+2. Dashboard
+3. Staking Interface
+4. Referral Dashboard
+5. DAO Voting Page
+6. Borrow/Lend Page
+7. Documentation Page
+
+---
+
+### Features:
+
+* Wallet connection (MetaMask)
+* Display balances
+* Show rewards
+* Trigger transactions
+* Real-time updates
+
+---
+
+## 🔷 LAYER 5 — BLOCKCHAIN INTEGRATION
+
+* Use Polygon network
+* Use ethers.js for interaction
+* Connect via RPC providers (Alchemy / Infura)
+* Use contract ABI to interact with contracts
+
+---
+
+# 🔁 SYSTEM MECHANISM (FULL LOOP)
+
+Implement full system cycle:
+
+1. User connects wallet
+2. User stakes tokens
+3. System generates rewards
+4. NEE mints tokens
+5. ARP collects fees
+6. Treasury accumulates funds
+7. ALS stabilizes price
+8. SIG controls supply
+9. ALP adjusts system parameters
+
+Cycle repeats every 12 hours.
+
+---
+
+# 💰 TOKENOMICS DESIGN
+
+Define:
+
+* Supply model (fixed or dynamic)
+* Emission strategy
+* Burn logic
+* Fee distribution model
+
+Ensure:
+
+* Sustainability
+* Controlled inflation
+* Treasury growth
+
+---
+
+# 🏦 BORROWING SYSTEM
+
+* Collateral-based borrowing
+* Example:
+  $1000 collateral → borrow $600
+* Interest goes to treasury
+* Liquidation if collateral drops
+
+---
+
+# 🪙 STABLECOIN DESIGN
+
+* Backed by treasury assets
+* Minted against collateral
+* Used for internal ecosystem
+
+---
+
+# 🗳 DAO SYSTEM
+
+* Proposal creation
+* Voting mechanism
+* Execution after approval
+* Community governance
+
+---
+
+# 🔐 SECURITY REQUIREMENTS
+
+* Reentrancy protection
+* Access control (Ownable / Roles)
+* Input validation
+* Safe math (Solidity 0.8+)
+* Upgradeability (optional)
+
+---
+
+# 📦 OUTPUT REQUIREMENTS
+
+Provide:
+
+1. Full architecture diagram (text)
+2. Complete folder structure:
+
+   * contracts/
+   * backend/
+   * frontend/
+3. Smart contract code (modular)
+4. Backend logic (with pseudocode)
+5. Frontend structure and flow
+6. Deployment steps (Polygon)
+7. Testing strategy
+8. Risk analysis
+9. Suggested improvements
+
+---
+
+# ⚠️ IMPORTANT RULES
+
+* Do NOT copy branding or text from existing platforms
+* Build original implementation
+* Keep system modular and scalable
+* Comment all code clearly
+* Follow production best practices
+
+---
+
+# 🚀 EXECUTION FLOW
+
+Start step-by-step:
+
+Step 1: Architecture
+Step 2: Smart contracts
+Step 3: Backend
+Step 4: Frontend
+Step 5: Deployment
+
+Do NOT skip steps. Build like a real product.
