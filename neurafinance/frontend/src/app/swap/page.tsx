@@ -37,7 +37,8 @@ function TokenSelector({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-56 glass-aip rounded-xl border border-white/10 shadow-2xl z-50 overflow-hidden" data-testid="token-dropdown">
+        <div className="absolute top-full left-0 mt-2 w-56 glass-aip rounded-xl border border-white/10 shadow-2xl z-[60] overflow-hidden" data-testid="token-dropdown">
+          <div className="max-h-64 overflow-y-auto">
           {tokens.map((token) => {
             const disabled = !token.address || token.address === '';
             return (
@@ -67,6 +68,7 @@ function TokenSelector({
               </button>
             );
           })}
+          </div>
         </div>
       )}
     </div>
