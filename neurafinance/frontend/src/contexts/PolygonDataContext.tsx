@@ -63,6 +63,8 @@ interface PolygonDataContextType {
   connect: () => Promise<void>;
   disconnect: () => void;
   switchToNetwork: (targetChainId: number) => Promise<void>;
+  showWalletModal: boolean;
+  setShowWalletModal: (show: boolean) => void;
   
   // Data (simplified for demo)
   totalSupply: bigint;
@@ -138,28 +140,37 @@ export function PolygonDataProvider({ children }: { children: React.ReactNode })
   const [lastUpdated, setLastUpdated] = useState<Date | null>(new Date());
   
   const isMounted = useRef(true);
+  const [showWalletModal, setShowWalletModal] = useState(false);
 
-  // Connect wallet
+  // Connect wallet - called from modal after user selects wallet
   const connect = useCallback(async () => {
-    console.log('[Wallet] Connect button clicked');
+    console.log('[Wallet] Connect initiated');
     setIsConnecting(true);
     setConnectionError(null);
     
+    const ethereum = (window as Window & { ethereum?: any }).ethereum;
+    if (!ethereum) {
+      setConnectionError('No wallet detected. Please install MetaMask or another Web3 wallet.');
+      setIsConnecting(false);
+      return;
+    }
+    
     try {
-      console.log('[Wallet] Calling connectWallet()...');
       const result = await connectWallet();
-      console.log('[Wallet] connectWallet result:', result);
       
       if (result) {
         setAddress(result.address);
         setChainId(result.chainId);
         setIsConnected(true);
+        setShowWalletModal(false);
         localStorage.setItem('walletConnected', 'true');
-        console.log('[Wallet] Connected successfully:', result.address);
+        console.log('[Wallet] Connected:', result.address);
       }
     } catch (err: any) {
       console.error('[Wallet] Connection failed:', err);
-      setConnectionError(err.message || 'Failed to connect wallet');
+      const msg = err.message || 'Failed to connect wallet';
+      setConnectionError(msg);
+      throw err; // Re-throw so modal can handle it
     } finally {
       setIsConnecting(false);
     }
@@ -269,6 +280,8 @@ export function PolygonDataProvider({ children }: { children: React.ReactNode })
     connect,
     disconnect,
     switchToNetwork,
+    showWalletModal,
+    setShowWalletModal,
     
     // Data
     ...data,
@@ -277,7 +290,7 @@ export function PolygonDataProvider({ children }: { children: React.ReactNode })
     error,
     lastUpdated,
     refresh,
-  }), [address, chainId, isConnected, isConnecting, connectionError, connect, disconnect, switchToNetwork, data, formattedData, isLoading, error, lastUpdated, refresh]);
+  }), [address, chainId, isConnected, isConnecting, connectionError, connect, disconnect, switchToNetwork, showWalletModal, data, formattedData, isLoading, error, lastUpdated, refresh]);
 
   return (
     <PolygonDataContext.Provider value={value}>
