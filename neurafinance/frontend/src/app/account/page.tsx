@@ -2,7 +2,7 @@
 
 import { Wallet, Copy, Coins, TrendingUp, Lock, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { usePolygonData } from '@/hooks/usePolygonData';
+import { usePolygonData } from '@/contexts/PolygonDataContext';
 import toast from 'react-hot-toast';
 
 export default function AccountPage() {

@@ -1,6 +1,6 @@
 'use client';
 
-import { usePolygonData } from '@/hooks/usePolygonData';
+import { usePolygonData } from '@/contexts/PolygonDataContext';
 import { 
   TrendingUp, 
   Wallet, 
@@ -14,18 +14,19 @@ import {
 
 export default function ProtocolStats() {
   const {
-    totalSupply,
-    maxSupply,
+    totalSupplyFormatted,
+    maxSupplyFormatted,
     circulatingSupply,
-    userBalance,
-    totalStaked,
-    totalUserStaked,
-    totalPendingRewards,
+    userBalanceFormatted,
+    totalStakedFormatted,
+    totalUserStakedFormatted,
+    totalPendingRewardsFormatted,
     healthScore,
-    emissionRate,
-    treasuryValue,
-    backingRatio,
-    tokenPrice,
+    emissionRateFormatted,
+    treasuryValueFormatted,
+    backingRatioFormatted,
+    tokenPriceFormatted,
+    stakingRatio,
     referralRank,
     referralEarnings,
     isLoading,
@@ -69,29 +70,29 @@ export default function ProtocolStats() {
   const stats = [
     {
       label: 'Total Supply',
-      value: formatNumber(totalSupply),
-      subtext: `${formatNumber(circulatingSupply)} circulating`,
+      value: totalSupplyFormatted,
+      subtext: `${circulatingSupply} circulating`,
       icon: Wallet,
       color: 'from-blue-500 to-blue-600',
     },
     {
       label: 'Total Staked',
-      value: formatNumber(totalStaked),
-      subtext: `${((Number(totalStaked) / Number(circulatingSupply || 1)) * 100).toFixed(1)}% of supply`,
+      value: totalStakedFormatted,
+      subtext: `${stakingRatio} of supply`,
       icon: PiggyBank,
       color: 'from-purple-500 to-purple-600',
     },
     {
       label: 'Treasury Value',
-      value: `$${formatNumber(treasuryValue)}`,
-      subtext: `${formatNumber(backingRatio)}% backing`,
+      value: treasuryValueFormatted,
+      subtext: `${backingRatioFormatted} backing`,
       icon: Shield,
       color: 'from-green-500 to-green-600',
     },
     {
       label: 'Health Score',
-      value: `${healthScore.toFixed(0)}/100`,
-      subtext: `${formatNumber(emissionRate)}% emission`,
+      value: `${healthScore}/100`,
+      subtext: `${emissionRateFormatted} emission`,
       icon: Activity,
       color: healthScore > 80 ? 'from-green-500 to-green-600' : 
              healthScore > 60 ? 'from-yellow-500 to-yellow-600' : 
@@ -154,46 +155,46 @@ export default function ProtocolStats() {
             <div>
               <div className="text-white/60 text-sm">NEURON Price</div>
               <div className="text-2xl font-bold text-white">
-                {isLoading ? '...' : `$${parseFloat(tokenPrice || '0').toFixed(4)}`}
+                {isLoading ? '...' : tokenPriceFormatted}
               </div>
             </div>
           </div>
           <div className="text-right">
             <div className="text-white/60 text-sm">Market Cap</div>
             <div className="text-lg font-medium text-white">
-              ${formatNumber((Number(circulatingSupply || 0) * Number(tokenPrice || 0)))}
+              ${formatNumber(parseFloat(circulatingSupply.replace(/,/g, '')) * parseFloat(tokenPriceFormatted.replace('$', '').replace(/,/g, '')))}
             </div>
           </div>
         </div>
       </div>
 
       {/* User Stats (if connected) */}
-      {isConnected && (Number(userBalance) > 0 || Number(totalUserStaked) > 0) && (
+      {isConnected && (parseFloat(userBalanceFormatted) > 0 || parseFloat(totalUserStakedFormatted) > 0) && (
         <div className="glass-aip p-4 rounded-xl border border-aip-green/10">
           <h4 className="text-white font-medium mb-4">Your Position</h4>
           <div className="grid grid-cols-3 gap-4">
             <div>
               <div className="text-white/40 text-xs mb-1">Balance</div>
-              <div className="text-white font-medium">{formatNumber(userBalance)}</div>
+              <div className="text-white font-medium">{userBalanceFormatted}</div>
             </div>
             <div>
               <div className="text-white/40 text-xs mb-1">Staked</div>
-              <div className="text-aip-green font-medium">{formatNumber(totalUserStaked)}</div>
+              <div className="text-aip-green font-medium">{totalUserStakedFormatted}</div>
             </div>
             <div>
               <div className="text-white/40 text-xs mb-1">Pending</div>
-              <div className="text-aip-teal font-medium">{formatNumber(totalPendingRewards)}</div>
+              <div className="text-aip-teal font-medium">{totalPendingRewardsFormatted}</div>
             </div>
           </div>
-          {referralRank > 0 && (
+          {referralRank !== 'N/A' && (
             <div className="mt-4 pt-4 border-t border-white/10">
               <div className="flex items-center justify-between">
                 <div className="text-white/60 text-sm">Referral Rank</div>
-                <div className="text-aip-green font-medium">Level {referralRank}</div>
+                <div className="text-aip-green font-medium">{referralRank}</div>
               </div>
               <div className="flex items-center justify-between mt-2">
                 <div className="text-white/60 text-sm">Total Earned</div>
-                <div className="text-aip-green font-medium">{formatNumber(referralEarnings)} NEURON</div>
+                <div className="text-aip-green font-medium">{referralEarnings} NEURON</div>
               </div>
             </div>
           )}

@@ -60,22 +60,41 @@ export async function connectWallet(): Promise<{ address: string; chainId: numbe
   }
 
   try {
-    const provider = await getBrowserProvider();
-    if (!provider) return null;
-
-    // Request account access
-    await provider.send('eth_requestAccounts', []);
+    // Force a fresh connection by requesting accounts directly from ethereum
+    // This will ALWAYS trigger MetaMask popup
+    console.log('[MetaMask] Requesting accounts...');
+    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
     
+    if (!accounts || accounts.length === 0) {
+      throw new Error('No accounts returned from MetaMask');
+    }
+    
+    const address = accounts[0];
+    
+    // Get chain ID
+    const chainIdHex = await ethereum.request({ method: 'eth_chainId' });
+    const chainId = parseInt(chainIdHex, 16);
+    
+    // Reset and recreate provider with new connection
+    browserProvider = null;
+    signer = null;
+    
+    const provider = await getBrowserProvider();
+    if (!provider) {
+      throw new Error('Failed to create provider');
+    }
+    
+    // Get signer
     const newSigner = await provider.getSigner();
-    const address = await newSigner.getAddress();
-    const network = await provider.getNetwork();
-    const chainId = Number(network.chainId);
-
     signer = newSigner;
 
+    console.log('[MetaMask] Connected:', address, 'Chain:', chainId);
     return { address, chainId };
   } catch (error: any) {
     console.error('Connection error:', error);
+    if (error.code === 4001) {
+      throw new Error('User rejected the connection request');
+    }
     throw error;
   }
 }

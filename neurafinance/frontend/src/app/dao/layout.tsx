@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { usePolygonData } from '@/hooks/usePolygonData';
+import { usePolygonData } from '@/contexts/PolygonDataContext';
 import { shortenAddress } from '@/lib/ethers';
 import { 
   TrendingUp, 

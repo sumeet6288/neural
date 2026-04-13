@@ -5,6 +5,7 @@ interface ILending {
     struct Loan {
         uint256 id;
         address borrower;
+        address collateralToken; // Added to track which token was used as collateral
         uint256 collateralAmount;
         uint256 borrowedAmount;
         uint256 interestRate;

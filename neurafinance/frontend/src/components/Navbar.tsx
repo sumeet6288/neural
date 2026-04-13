@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePolygonData } from '@/hooks/usePolygonData';
+import { usePolygonData } from '@/contexts/PolygonDataContext';
 import { shortenAddress } from '@/lib/ethers';
 import { Wallet, Menu, X, Brain } from 'lucide-react';
 import { useState } from 'react';

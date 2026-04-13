@@ -5,8 +5,10 @@ import "../interfaces/IStaking.sol";
 import "../interfaces/INeuronToken.sol";
 import "../interfaces/IReferral.sol";
 import "../libraries/SafeMath.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
-contract Staking is IStaking {
+contract Staking is IStaking, ReentrancyGuard, Pausable {
     using SafeMath for uint256;
     
     // Bond durations in seconds
@@ -37,11 +39,17 @@ contract Staking is IStaking {
     // Emergency pause
     bool public paused = false;
     
+    // Timelock for emergency withdrawals
+    uint256 public constant TIMELOCK_DELAY = 72 hours;
+    mapping(bytes32 => uint256) public timelockExpiry;
+    
     // Events
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event RewardsPoolUpdated(address indexed pool);
     event ReferralContractUpdated(address indexed referral);
     event Paused(bool paused);
+    event EmergencyWithdrawScheduled(bytes32 indexed requestId, uint256 amount, uint256 executeAfter);
+    event EmergencyWithdrawExecuted(bytes32 indexed requestId, uint256 amount);
     
     modifier onlyOwner() {
         require(msg.sender == owner, "Staking: not owner");
@@ -53,12 +61,20 @@ contract Staking is IStaking {
         _;
     }
     
+    function _pause() internal override {
+        paused = true;
+    }
+    
+    function _unpause() internal override {
+        paused = false;
+    }
+    
     constructor(address _neuronToken) {
         owner = msg.sender;
         neuronToken = INeuronToken(_neuronToken);
     }
     
-    function stake(uint256 amount, uint256 lockDuration) external override whenNotPaused {
+    function stake(uint256 amount, uint256 lockDuration) external override whenNotPaused nonReentrant {
         require(amount > 0, "Staking: zero amount");
         require(lockDuration == 0 || isValidBondDuration(lockDuration), "Staking: invalid duration");
         
@@ -92,7 +108,7 @@ contract Staking is IStaking {
         emit Staked(msg.sender, stakeId, amount, lockDuration);
     }
     
-    function unstake(uint256 stakeId) external override whenNotPaused {
+    function unstake(uint256 stakeId) external override whenNotPaused nonReentrant {
         StakeInfo storage stakeInfo = stakes[msg.sender][stakeId];
         require(stakeInfo.active, "Staking: stake not active");
         
@@ -116,7 +132,7 @@ contract Staking is IStaking {
         emit RewardsClaimed(msg.sender, stakeId, pending);
     }
     
-    function claimRewards(uint256 stakeId) external override whenNotPaused {
+    function claimRewards(uint256 stakeId) external override whenNotPaused nonReentrant {
         StakeInfo storage stakeInfo = stakes[msg.sender][stakeId];
         require(stakeInfo.active, "Staking: stake not active");
         
@@ -137,7 +153,7 @@ contract Staking is IStaking {
         emit RewardsClaimed(msg.sender, stakeId, pending);
     }
     
-    function compoundRewards(uint256 stakeId) external override whenNotPaused {
+    function compoundRewards(uint256 stakeId) external override whenNotPaused nonReentrant {
         StakeInfo storage stakeInfo = stakes[msg.sender][stakeId];
         require(stakeInfo.active, "Staking: stake not active");
         
@@ -250,11 +266,51 @@ contract Staking is IStaking {
     }
     
     function setPaused(bool _paused) external onlyOwner {
-        paused = _paused;
+        if (_paused) {
+            _pause();
+        } else {
+            _unpause();
+        }
         emit Paused(_paused);
     }
     
-    function emergencyWithdraw(uint256 amount) external onlyOwner {
+    /**
+     * @notice Schedule emergency withdrawal with timelock
+     * @dev Prevents instant rug pulls; users have 72h to withdraw before execution
+     */
+    function scheduleEmergencyWithdraw(uint256 amount) external onlyOwner {
+        require(amount > 0, "Staking: zero amount");
+        require(amount <= neuronToken.balanceOf(address(this)), "Staking: insufficient balance");
+        
+        bytes32 requestId = keccak256(abi.encodePacked(block.timestamp, amount, owner));
+        uint256 executeAfter = block.timestamp + TIMELOCK_DELAY;
+        
+        timelockExpiry[requestId] = executeAfter;
+        
+        emit EmergencyWithdrawScheduled(requestId, amount, executeAfter);
+    }
+    
+    /**
+     * @notice Execute previously scheduled emergency withdrawal
+     * @dev Can only execute after timelock delay has passed
+     */
+    function executeEmergencyWithdraw(uint256 amount, bytes32 requestId) external onlyOwner nonReentrant {
+        require(timelockExpiry[requestId] > 0, "Staking: request not found");
+        require(block.timestamp >= timelockExpiry[requestId], "Staking: timelock not expired");
+        require(amount <= neuronToken.balanceOf(address(this)), "Staking: insufficient balance");
+        
+        // Clear timelock to prevent replay
+        delete timelockExpiry[requestId];
+        
         neuronToken.transfer(owner, amount);
+        emit EmergencyWithdrawExecuted(requestId, amount);
+    }
+    
+    /**
+     * @notice Cancel scheduled emergency withdrawal
+     */
+    function cancelEmergencyWithdraw(bytes32 requestId) external onlyOwner {
+        require(timelockExpiry[requestId] > 0, "Staking: request not found");
+        delete timelockExpiry[requestId];
     }
 }

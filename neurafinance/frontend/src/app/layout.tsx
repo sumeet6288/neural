@@ -3,10 +3,11 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import dynamic from 'next/dynamic'
+import { PolygonDataProvider } from '@/contexts/PolygonDataContext'
 
 const inter = Inter({ 
   subsets: ['latin'],
-  display: 'swap', // Optimize font loading
+  display: 'swap',
 })
 
 // Lazy load heavy components
@@ -28,11 +29,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <DAONav />
-        <main className="pt-16">
-          {children}
-        </main>
-        <Toaster position="top-right" />
+        <PolygonDataProvider>
+          <DAONav />
+          <main className="pt-16">
+            {children}
+          </main>
+          <Toaster position="top-right" />
+        </PolygonDataProvider>
       </body>
     </html>
   )

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ArrowUpDown, Copy, ChevronDown } from 'lucide-react';
-import { usePolygonData } from '@/hooks/usePolygonData';
+import { usePolygonData } from '@/contexts/PolygonDataContext';
 import toast from 'react-hot-toast';
 
 const EXCHANGE_RATE = 2.17; // 1 USDT = 2.17 NEURON

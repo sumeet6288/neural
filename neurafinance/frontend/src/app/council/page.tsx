@@ -1,7 +1,7 @@
 'use client';
 
 import { Info, CheckCircle, XCircle } from 'lucide-react';
-import { usePolygonData } from '@/hooks/usePolygonData';
+import { usePolygonData } from '@/contexts/PolygonDataContext';
 import toast from 'react-hot-toast';
 
 const proposals = [

@@ -6,8 +6,9 @@ import "../interfaces/INeuronToken.sol";
 import "../interfaces/IStablecoin.sol";
 import "../interfaces/ITreasury.sol";
 import "../libraries/SafeMath.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract Lending is ILending {
+contract Lending is ILending, ReentrancyGuard {
     using SafeMath for uint256;
     
     // Loans storage
@@ -38,10 +39,16 @@ contract Lending is ILending {
     // Interest accrual
     uint256 public constant SECONDS_PER_YEAR = 365 days;
     
+    // Timelock for emergency operations
+    uint256 public constant TIMELOCK_DELAY = 72 hours;
+    mapping(bytes32 => uint256) public timelockExpiry;
+    
     // Events
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event CollateralAssetAdded(address indexed token, uint256 ltvRatio);
     event CollateralAssetUpdated(address indexed token, uint256 ltvRatio);
+    event EmergencyWithdrawScheduled(bytes32 indexed requestId, address token, uint256 amount, uint256 executeAfter);
+    event EmergencyWithdrawExecuted(bytes32 indexed requestId, address token, uint256 amount, address recipient);
     
     modifier onlyOwner() {
         require(msg.sender == owner, "Lending: not owner");
@@ -133,6 +140,7 @@ contract Lending is ILending {
         loans[loanId] = Loan({
             id: loanId,
             borrower: msg.sender,
+            collateralToken: collateralToken, // Track collateral token
             collateralAmount: collateralAmount,
             borrowedAmount: borrowAmount,
             interestRate: asset.interestRate,
@@ -154,7 +162,7 @@ contract Lending is ILending {
         return loanId;
     }
     
-    function repay(uint256 loanId, uint256 amount) external override {
+    function repay(uint256 loanId, uint256 amount) external override nonReentrant {
         Loan storage loan = loans[loanId];
         require(loan.active, "Lending: loan not active");
         require(!loan.liquidated, "Lending: loan liquidated");
@@ -186,14 +194,13 @@ contract Lending is ILending {
             loan.active = false;
             
             // Return collateral
-            // Find collateral token (simplified - in production track this in loan)
-            _returnCollateral(loan.borrower, loan.collateralAmount);
+            _returnCollateral(loan.borrower, loan.collateralAmount, loanId);
         }
         
         emit LoanRepaid(loanId, repayAmount);
     }
     
-    function liquidate(uint256 loanId) external override {
+    function liquidate(uint256 loanId) external override nonReentrant {
         Loan storage loan = loans[loanId];
         require(loan.active, "Lending: loan not active");
         require(!loan.liquidated, "Lending: already liquidated");
@@ -216,19 +223,19 @@ contract Lending is ILending {
         uint256 protocolFee = loan.collateralAmount.mul(liquidationFee).div(PERCENT_DENOMINATOR);
         
         // Transfer to liquidator
-        IERC20(address(neuronToken)).transfer(msg.sender, liquidatorReward);
+        IERC20(loan.collateralToken).transfer(msg.sender, liquidatorReward);
         
         // Transfer fee to treasury
         if (protocolFee > 0) {
-            IERC20(address(neuronToken)).transfer(address(treasury), protocolFee);
+            IERC20(loan.collateralToken).transfer(address(treasury), protocolFee);
         }
         
         emit LoanLiquidated(loanId, msg.sender);
     }
     
-    function _returnCollateral(address borrower, uint256 amount) internal {
-        // Simplified - in production track which token was used
-        IERC20(address(neuronToken)).transfer(borrower, amount);
+    function _returnCollateral(address borrower, uint256 amount, uint256 loanId) internal {
+        Loan storage loan = loans[loanId];
+        IERC20(loan.collateralToken).transfer(borrower, amount);
     }
     
     function calculateInterest(uint256 loanId) public view returns (uint256) {
@@ -302,6 +309,26 @@ contract Lending is ILending {
     }
     
     function emergencyWithdraw(address token, uint256 amount, address recipient) external onlyOwner {
+        require(recipient != address(0), "Lending: zero recipient");
+        require(amount > 0, "Lending: zero amount");
+        require(IERC20(token).balanceOf(address(this)) >= amount, "Lending: insufficient balance");
+        
+        bytes32 requestId = keccak256(abi.encodePacked(token, amount, recipient, block.timestamp));
+        uint256 executeAfter = block.timestamp + TIMELOCK_DELAY;
+        
+        timelockExpiry[requestId] = executeAfter;
+        
+        emit EmergencyWithdrawScheduled(requestId, token, amount, executeAfter);
+    }
+    
+    function executeEmergencyWithdraw(address token, uint256 amount, address recipient, bytes32 requestId) external onlyOwner nonReentrant {
+        require(timelockExpiry[requestId] > 0, "Lending: request not found");
+        require(block.timestamp >= timelockExpiry[requestId], "Lending: timelock not expired");
+        require(IERC20(token).balanceOf(address(this)) >= amount, "Lending: insufficient balance");
+        
+        delete timelockExpiry[requestId];
+        
         IERC20(token).transfer(recipient, amount);
+        emit EmergencyWithdrawExecuted(requestId, token, amount, recipient);
     }
 }

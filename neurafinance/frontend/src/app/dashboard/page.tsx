@@ -11,9 +11,10 @@ import {
   Copy,
   Clock,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  RefreshCw
 } from 'lucide-react';
-import { usePolygonData } from '@/hooks/usePolygonData';
+import { usePolygonData } from '@/contexts/PolygonDataContext';
 import toast from 'react-hot-toast';
 import CountdownTimer from '@/components/CountdownTimer';
 
@@ -161,10 +162,17 @@ function StakingModal({
   bonus: string;
 }) {
   const [amount, setAmount] = useState('');
-  const [balance, setBalance] = useState(1000); // Mock balance
   const { isConnected } = usePolygonData();
+  // DISABLED: Real staking - contracts not deployed
+  // const { neuronBalance, stake, isLoading } = useStaking();
+  
+  const neuronBalance = "0.000";
+  const isLoading = false;
+  const stake = async () => { return false; };
 
   if (!isOpen) return null;
+
+  const balance = parseFloat(neuronBalance || '0');
 
   const handleMax = () => {
     setAmount(balance.toString());
@@ -176,7 +184,7 @@ function StakingModal({
     setAmount(calculatedAmount);
   };
 
-  const handleConfirmStake = () => {
+  const handleConfirmStake = async () => {
     if (!amount || parseFloat(amount) <= 0) {
       toast.error('Please enter a valid amount');
       return;
@@ -185,7 +193,9 @@ function StakingModal({
       toast.error('Insufficient balance');
       return;
     }
-    toast.success(`Successfully staked ${amount} NEURON for ${period}`);
+
+    // DISABLED: Real staking not available yet
+    toast.success(`Demo Mode: Would stake ${amount} NEURON for ${period}`);
     setAmount('');
     onClose();
   };
@@ -253,10 +263,10 @@ function StakingModal({
 
           <button 
             onClick={handleConfirmStake}
-            disabled={!isConnected || !amount}
+            disabled={!isConnected || !amount || isLoading}
             className="btn-aip-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Confirm Stake
+            {isLoading ? 'Staking...' : 'Confirm Stake'}
           </button>
         </div>
       </div>
@@ -265,7 +275,29 @@ function StakingModal({
 }
 
 export default function Dashboard() {
-  const { address, isConnected } = usePolygonData();
+  const { address, isConnected, connect, isConnecting } = usePolygonData();
+  
+  // Static demo data
+  const loading = false;
+  const protocolMetrics = {
+    marketCap: "$17,316,457.99",
+    tvl: "3,711,771.81",
+    totalSupply: "7,986,831.94",
+    tokenPrice: "$2.17",
+    totalStaked: "5,234,567.89",
+    stakingRatio: "65.54%"
+  };
+  
+  const userMetrics = {
+    neuronBalance: "0.000",
+    totalStaked: "0.000",
+    pendingRewards: "0.000",
+    referralCount: 0,
+    rank: "N/A"
+  };
+  const neuronBalance = "0.000";
+  const refresh = () => {};
+  
   const [activeTab, setActiveTab] = useState('stake');
   const [stakingModal, setStakingModal] = useState<{isOpen: boolean; type: string; period: string; bonus: string}>({
     isOpen: false,
@@ -346,39 +378,52 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Refresh Button */}
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={refresh}
+            disabled={loading}
+            className="btn-aip py-2 px-4 text-sm flex items-center gap-2 hover:bg-aip-green/20 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <span>{loading ? 'Refreshing...' : 'Refresh Data'}</span>
+          </button>
+        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
           <StatCard 
             icon={DollarSign}
-            label="Market Value"
-            value="$17,316,457.99"
+            label="Market Cap"
+            value={protocolMetrics.marketCap}
           />
           <StatCard 
             icon={Wallet}
             label="Treasury Balance"
-            value="3,711,771.81"
-            subValue="NEURON"
+            value={protocolMetrics.tvl}
+            subValue="USD"
           />
           <StatCard 
             icon={Coins}
             label="Total Supply"
-            value="7,986,831.94"
+            value={protocolMetrics.totalSupply}
             subValue="NEURON"
           />
           <StatCard 
             icon={TrendingUp}
             label="Current Token Price"
-            value="$2.17"
+            value={protocolMetrics.tokenPrice}
           />
           <StatCard 
             icon={Wallet}
             label="Wallet NEURON Balance"
-            value="0.000"
+            value={isConnected ? userMetrics.neuronBalance : "Connect Wallet"}
           />
           <StatCard 
-            icon={DollarSign}
-            label="Wallet USDT Balance"
-            value="0.000"
+            icon={TrendingUp}
+            label="Total Staked"
+            value={protocolMetrics.totalStaked}
+            subValue={`(${protocolMetrics.stakingRatio} of supply)`}
           />
         </div>
 
@@ -475,22 +520,22 @@ export default function Dashboard() {
               <ReferralStatCard 
                 icon={Award}
                 label="My Rank"
-                value="N/A"
+                value={loading ? "..." : (isConnected ? userMetrics?.rank || "N/A" : "Connect")}
               />
               <ReferralStatCard 
                 icon={Coins}
                 label="My Staking"
-                value="0.000 NEURON"
+                value={loading ? "..." : (isConnected ? `${userMetrics?.totalStaked || "0.000"} NEURON` : "Connect")}
               />
               <ReferralStatCard 
                 icon={TrendingUp}
-                label="Prime Reward"
-                value="0.000 NEURON"
+                label="Pending Rewards"
+                value={loading ? "..." : (isConnected ? `${userMetrics?.pendingRewards || "0.000"} NEURON` : "Connect")}
               />
               <ReferralStatCard 
                 icon={Users}
-                label="Alliance Reward"
-                value="0.000 NEURON"
+                label="Referrals"
+                value={loading ? "..." : (isConnected ? userMetrics?.referralCount?.toString() || "0" : "Connect")}
               />
             </div>
           </div>

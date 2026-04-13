@@ -5,8 +5,10 @@ import "../interfaces/ITreasury.sol";
 import "../interfaces/INeuronToken.sol";
 import "../interfaces/IStablecoin.sol";
 import "../libraries/SafeMath.sol";
+import "../libraries/PriceOracle.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract Treasury is ITreasury {
+contract Treasury is ITreasury, ReentrancyGuard {
     using SafeMath for uint256;
     
     address public owner;
@@ -15,6 +17,9 @@ contract Treasury is ITreasury {
     // Core tokens
     INeuronToken public neuronToken;
     IStablecoin public stablecoin;
+    
+    // Price Oracle
+    PriceOracle public priceOracle;
     
     // Supported stablecoins
     mapping(address => bool) public supportedStables;
@@ -31,6 +36,10 @@ contract Treasury is ITreasury {
     // Liquidity management
     uint256 public liquidityReserveRatio = 30; // 30% reserved for liquidity
     
+    // Timelock for emergency operations
+    uint256 public constant TIMELOCK_DELAY = 72 hours;
+    mapping(bytes32 => uint256) public timelockExpiry;
+    
     // Events
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event CallerAuthorized(address indexed caller);
@@ -38,6 +47,8 @@ contract Treasury is ITreasury {
     event StablecoinAdded(address indexed token);
     event StablecoinRemoved(address indexed token);
     event BuybackThresholdUpdated(uint256 threshold);
+    event EmergencyWithdrawScheduled(bytes32 indexed requestId, address token, uint256 amount, uint256 executeAfter);
+    event EmergencyWithdrawExecuted(bytes32 indexed requestId, address token, uint256 amount, address recipient);
     
     modifier onlyOwner() {
         require(msg.sender == owner, "Treasury: not owner");
@@ -49,15 +60,16 @@ contract Treasury is ITreasury {
         _;
     }
     
-    constructor(address _neuronToken, address _stablecoin) {
+    constructor(address _neuronToken, address _stablecoin, address _priceOracle) {
         owner = msg.sender;
         neuronToken = INeuronToken(_neuronToken);
         stablecoin = IStablecoin(_stablecoin);
+        priceOracle = PriceOracle(_priceOracle);
     }
     
     receive() external payable {}
     
-    function deposit(address token, uint256 amount) external override {
+    function deposit(address token, uint256 amount) external override nonReentrant {
         require(supportedStables[token] || token == address(neuronToken), "Treasury: unsupported token");
         require(amount > 0, "Treasury: zero amount");
         
@@ -67,7 +79,7 @@ contract Treasury is ITreasury {
         emit Deposit(token, amount, msg.sender);
     }
     
-    function withdraw(address token, uint256 amount, address recipient) external override onlyAuthorized {
+    function withdraw(address token, uint256 amount, address recipient) external override onlyAuthorized nonReentrant {
         require(recipient != address(0), "Treasury: zero recipient");
         require(balances[token] >= amount, "Treasury: insufficient balance");
         
@@ -77,7 +89,7 @@ contract Treasury is ITreasury {
         emit Withdrawal(token, amount, recipient);
     }
     
-    function executeBuyback(uint256 amount) external override onlyAuthorized {
+    function executeBuyback(uint256 amount) external override onlyAuthorized nonReentrant {
         require(block.timestamp >= lastBuybackTime.add(buybackCooldown), "Treasury: buyback on cooldown");
         require(amount > 0, "Treasury: zero amount");
         
@@ -96,7 +108,7 @@ contract Treasury is ITreasury {
         emit BuybackExecuted(amount, currentPrice);
     }
     
-    function addLiquidity(uint256 tokenAmount, uint256 stableAmount) external override onlyAuthorized {
+    function addLiquidity(uint256 tokenAmount, uint256 stableAmount) external override onlyAuthorized nonReentrant {
         require(tokenAmount > 0 && stableAmount > 0, "Treasury: zero amounts");
         
         address primaryStable = getPrimaryStable();
@@ -129,9 +141,19 @@ contract Treasury is ITreasury {
     }
     
     function getTokenPrice() public view returns (uint256) {
-        // In production: integrate with Chainlink or DEX oracle
-        // For now, return mock price
-        return 1e18; // $1.00
+        // Use Chainlink Price Oracle for accurate pricing
+        if (address(priceOracle) != address(0)) {
+            try priceOracle.getPrice(address(neuronToken)) returns (uint256 price, ) {
+                return price;
+            } catch {
+                // Fallback to backup oracle or last known price
+                // In production, implement circuit breaker
+            }
+        }
+        
+        // Emergency fallback - should never be used in production
+        // Deploy with proper oracle before launch
+        revert("Treasury: price oracle not available");
     }
     
     function getPrimaryStable() public view returns (address) {
@@ -188,8 +210,32 @@ contract Treasury is ITreasury {
         liquidityReserveRatio = ratio;
     }
     
+    function setPriceOracle(address _priceOracle) external onlyOwner {
+        require(_priceOracle != address(0), "Treasury: zero address");
+        priceOracle = PriceOracle(_priceOracle);
+    }
+    
     function emergencyWithdraw(address token, uint256 amount, address recipient) external onlyOwner {
         require(recipient != address(0), "Treasury: zero recipient");
+        require(amount > 0, "Treasury: zero amount");
+        require(IERC20(token).balanceOf(address(this)) >= amount, "Treasury: insufficient balance");
+        
+        bytes32 requestId = keccak256(abi.encodePacked(token, amount, recipient, block.timestamp));
+        uint256 executeAfter = block.timestamp + TIMELOCK_DELAY;
+        
+        timelockExpiry[requestId] = executeAfter;
+        
+        emit EmergencyWithdrawScheduled(requestId, token, amount, executeAfter);
+    }
+    
+    function executeEmergencyWithdraw(address token, uint256 amount, address recipient, bytes32 requestId) external onlyOwner nonReentrant {
+        require(timelockExpiry[requestId] > 0, "Treasury: request not found");
+        require(block.timestamp >= timelockExpiry[requestId], "Treasury: timelock not expired");
+        require(IERC20(token).balanceOf(address(this)) >= amount, "Treasury: insufficient balance");
+        
+        delete timelockExpiry[requestId];
+        
         IERC20(token).transfer(recipient, amount);
+        emit EmergencyWithdrawExecuted(requestId, token, amount, recipient);
     }
 }

@@ -3,7 +3,7 @@
 import { useState, useTransition, memo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { usePolygonData } from '@/hooks/usePolygonData';
+import { usePolygonData } from '@/contexts/PolygonDataContext';
 import { shortenAddress } from '@/lib/ethers';
 import { 
   TrendingUp, 
@@ -53,7 +53,7 @@ const NavItem = memo(function NavItem({
 });
 
 const DAONav = memo(function DAONav() {
-  const { address, isConnected, connect, isConnecting } = usePolygonData();
+  const { address, isConnected, connect, disconnect, isConnecting } = usePolygonData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const pathname = usePathname();
@@ -99,9 +99,18 @@ const DAONav = memo(function DAONav() {
           {/* Connect Button */}
           <div className="flex items-center gap-3">
             {isConnected ? (
-              <div className="flex items-center gap-2 glass-aip px-4 py-2 rounded-xl">
-                <div className="w-2 h-2 rounded-full bg-aip-green animate-pulse" />
-                <span className="text-white text-sm">{shortenAddress(address || '')}</span>
+              <div className="flex items-center gap-2">
+                <div className="glass-aip px-4 py-2 rounded-xl flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-aip-green animate-pulse" />
+                  <span className="text-white text-sm">{shortenAddress(address || '')}</span>
+                </div>
+                <button
+                  onClick={disconnect}
+                  className="p-2 rounded-xl bg-white/5 text-white/50 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                  title="Disconnect Wallet"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             ) : (
               <button 
@@ -109,7 +118,7 @@ const DAONav = memo(function DAONav() {
                 disabled={isConnecting}
                 className="btn-aip-primary text-sm py-2 px-4 disabled:opacity-50"
               >
-                {isConnecting ? 'Connecting...' : 'Connect'}
+                {isConnecting ? 'Connecting...' : 'Connect Wallet'}
               </button>
             )}
             

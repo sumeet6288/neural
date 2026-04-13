@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Coins, Clock, Award, Lock } from 'lucide-react';
-import { usePolygonData } from '@/hooks/usePolygonData';
+import { usePolygonData } from '@/contexts/PolygonDataContext';
 import toast from 'react-hot-toast';
 import CountdownTimer from '@/components/CountdownTimer';
 
