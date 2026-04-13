@@ -16,6 +16,10 @@ const DAONav = dynamic(() => import('@/components/DAONav'), {
   loading: () => <div className="h-16 glass-aip border-b border-white/5" />
 })
 
+const GlobalWalletModal = dynamic(() => import('@/components/GlobalWalletModal'), {
+  ssr: false,
+})
+
 export const metadata: Metadata = {
   title: 'NeuraFinance - AI-Driven DeFi Platform',
   description: 'Next-generation DeFi platform powered by AI simulation engine',
@@ -34,6 +38,7 @@ export default function RootLayout({
           <main className="pt-16">
             {children}
           </main>
+          <GlobalWalletModal />
           <Toaster position="top-right" />
         </PolygonDataProvider>
       </body>
