@@ -20,6 +20,10 @@ const GlobalWalletModal = dynamic(() => import('@/components/GlobalWalletModal')
   ssr: false,
 })
 
+const ReferralTracker = dynamic(() => import('@/components/ReferralTracker'), {
+  ssr: false,
+})
+
 export const metadata: Metadata = {
   title: 'NeuraFinance - AI-Driven DeFi Platform',
   description: 'Next-generation DeFi platform powered by AI simulation engine',
@@ -39,6 +43,7 @@ export default function RootLayout({
             {children}
           </main>
           <GlobalWalletModal />
+          <ReferralTracker />
           <Toaster position="top-right" />
         </PolygonDataProvider>
       </body>

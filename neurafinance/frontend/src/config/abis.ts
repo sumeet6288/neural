@@ -48,10 +48,15 @@ export const LENDING_ABI = [
   "function getUserLoans(address user) external view returns (uint256[])"
 ];
 
-// Referral ABI
+// Referral ABI - matching actual Referral.sol contract
 export const REFERRAL_ABI = [
-  "function getReferralInfo(address user) external view returns (tuple(uint256 referralCount, uint256 totalEarnings, uint256 teamVolume))",
-  "function getReferrer(address user) external view returns (address)"
+  "function registerReferrer(address referrer) external",
+  "function getUserInfo(address user) external view returns (tuple(address referrer, uint256 referralCount, uint256 teamVolume, uint256 rank, uint256 totalEarned))",
+  "function getRankRequirements(uint256 rank) external view returns (tuple(string name, uint256 minStake, uint256 minTeamVolume, uint256 minReferrals, uint256 bonusPercentage))",
+  "function calculateRank(address user) external view returns (uint256)",
+  "function getReferrals(address referrer) external view returns (address[])",
+  "function getReferralCount(address referrer) external view returns (uint256)",
+  "function updateRank(address user) external",
 ];
 
 // Price Feed ABI (Chainlink)
